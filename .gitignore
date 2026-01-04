@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+env/
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Django
+*.log
+local_settings.py
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 你自己的敏感文件
+*.pem
+*.key
+.env
+secrets.json
