@@ -14,7 +14,7 @@
         <div class="row g-4">
             {% for blog in blogs %}
                 <div class="col-12 col-md-6 col-lg-4">
-                    <article class="blog-card animate-fade-in-up" style="animation-delay: {{ forloop.counter0|divisibleby:3|yesno:"0,0.1,0.2" }}s">
+                    <article class="blog-card animate-fade-in-up" style="animation-delay: {% cycle '0' '0.1' '0.2' %}s">
                         <!-- 卡片头部 -->
                         <div class="blog-card-header">
                             <h2 class="blog-card-title">

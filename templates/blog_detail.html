@@ -75,7 +75,7 @@
         <div class="mt-4">
             {% if blog.comments.all %}
                 {% for comment in blog.comments.all %}
-                    <div class="comment-item animate-slide-in" style="animation-delay: {{ forloop.counter0|add:1|floatformat:1|mul:0.1 }}s">
+                    <div class="comment-item animate-slide-in" style="animation-delay: 0.{{ forloop.counter }}s">
                         <div class="comment-author">
                             <img src="{% static 'image/avatar.webp' %}"
                                  alt="{{ comment.author.username }}"
