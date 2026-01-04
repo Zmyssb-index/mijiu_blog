@@ -4,47 +4,96 @@
 
 {% block head %}
     <script src="{% static 'jquery/jquery-3.7.1.min.js' %}"></script>
-	<link rel="stylesheet" href="{% static 'wangeditor/style.css' %}">
+    <link rel="stylesheet" href="{% static 'wangeditor/style.css' %}">
     <script src="{% static 'wangeditor/index.js' %}"></script>
     <script src="{% static 'js/pub_blog.js' %}"></script>
-    <style>
-      #editor—wrapper {
-        border: 1px solid #ccc;
-        z-index: 100; /* 按需定义 */
-      }
-      #toolbar-container { border-bottom: 1px solid #ccc; }
-      #editor-container { height: 500px; }
-    </style>
 {% endblock %}
 
-
 {% block main %}
-	<h1>发布博客</h1>
-    <div class="mt-3">
+    <div class="pub-blog-container animate-fade-in-up">
+        <!-- 页面标题 -->
+        <div class="text-center mb-5">
+            <h1 class="pub-blog-title">✍️ 发布博客</h1>
+            <p class="text-muted fs-5">分享你的知识和想法</p>
+        </div>
+
+        <!-- 发布表单 -->
         <form action="" method="POST">
-        {% csrf_token %}
-            <div class="mb-3">
-                <label class="form-label">标题</label>
-                <input type="text" name="title" class="form-control">
+            {% csrf_token %}
+
+            <!-- 标题 -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold fs-5">📝 文章标题</label>
+                <input type="text" name="title" class="form-control form-control-modern"
+                       placeholder="请输入文章标题..." required>
             </div>
-            <div class="mb-3">
-                <label class="form-label">分类</label>
-                <select name="category" class="form-select" id="category-select">
+
+            <!-- 分类 -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold fs-5">🏷️ 文章分类</label>
+                <select name="category" class="form-select form-control-modern" id="category-select" required>
+                    <option value="">请选择分类</option>
                     {% for category in categories %}
                         <option value="{{ category.id }}">{{ category.name }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="mb-3">
-                <label class="form-label">内容</label>
-                <div id="editor—wrapper">
-                    <div id="toolbar-container"><!-- 工具栏 --></div>
-                    <div id="editor-container"><!-- 编辑器 --></div>
+
+            <!-- 内容编辑器 -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold fs-5">📄 文章内容</label>
+                <div class="editor-wrapper">
+                    <div id="toolbar-container"></div>
+                    <div id="editor-container" style="height: 500px; background: white;"></div>
                 </div>
+                <small class="text-muted">支持富文本编辑，可插入图片、代码等</small>
             </div>
-            <div class="mb-3 text-end">
-                <button class="btn btn-primary" id="submit-btn">发布</button>
+
+            <!-- 提交按钮 -->
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="/" class="btn btn-modern-outline">
+                    ← 取消
+                </a>
+                <button type="button" class="btn btn-modern-primary btn-lg" id="submit-btn">
+                    🚀 立即发布
+                </button>
             </div>
         </form>
     </div>
+{% endblock %}
+
+{% block scripts %}
+    <style>
+        /* 编辑器工具栏样式优化 */
+        #toolbar-container {
+            border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+            background: rgba(102, 126, 234, 0.05);
+            padding: 0.5rem;
+        }
+
+        #editor-container {
+            background: white;
+            padding: 1rem;
+        }
+
+        /* WangEditor 按钮样式 */
+        .w-e-toolbar {
+            background: transparent !important;
+            border: none !important;
+        }
+
+        .w-e-text-container {
+            border: none !important;
+        }
+
+        /* 表单选择框优化 */
+        #category-select {
+            cursor: pointer;
+        }
+
+        #category-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+    </style>
 {% endblock %}

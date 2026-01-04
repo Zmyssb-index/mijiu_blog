@@ -1,54 +1,120 @@
 {% extends 'base.html' %}
 
+{% block title %}{{ blog.title }}{% endblock %}
+
 {% block head %}
     <link rel="stylesheet" href="{% static 'highlight/styles/github-dark.min.css' %}">
     <script src="{% static 'highlight/highlight.min.js' %}"></script>
 {% endblock %}
 
 {% block main %}
-	<h1>{{ blog.title }}</h1>
-    <hr>
-    <div class="mt-2">
-        <img src="{% static 'image/avatar.webp' %}" class="rounded-circle" width="30" height="30" alt="">
-        <span class="ms-2">{{ blog.author.username }}</span>
-        <span class="ms-2">于</span>
-        <span class="ms-2">{{ blog.pub_time|date:"Y年m月d日 h时i分" }}</span>发布
-    </div>
-    <hr>
-    <div class="py-2">
-        {{ blog.content|safe }}
-    </div>
-    <hr>
-    <div class="mt-2">
-        <h3>评论（{{ blog.comments.all|length }}）</h3>
-        <form action="{% url 'blog:pub_comment' %}" method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="blog_id" value="{{ blog.id }}">
-            <div class="mt-2">
-                <input type="text" class="form-control" placeholder="请输入评论" name="content">
+    <!-- 博客头部 -->
+    <article class="animate-fade-in-up">
+        <div class="blog-detail-header">
+            <h1 class="blog-title">{{ blog.title }}</h1>
+
+            <div class="blog-meta">
+                <div class="author-info">
+                    <img src="{% static 'image/avatar.webp' %}"
+                         alt="{{ blog.author.username }}"
+                         class="author-avatar"
+                         style="width: 48px; height: 48px;">
+                    <div>
+                        <div class="fw-semibold text-dark">{{ blog.author.username }}</div>
+                        <div class="small">{{ blog.pub_time|date:"Y年m月d日 H:i" }}</div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-gradient" style="background: var(--primary-gradient); padding: 0.5rem 1rem;">
+                        {{ blog.category.name }}
+                    </span>
+                </div>
             </div>
-            <div class="text-end mt-2">
-                <button type="submit" class="btn btn-primary">评论</button>
+        </div>
+
+        <!-- 博客内容 -->
+        <div class="blog-content">
+            {{ blog.content|safe }}
+        </div>
+    </article>
+
+    <!-- 评论区 -->
+    <section class="comments-section animate-slide-in">
+        <h3 class="comments-title">
+            💬 评论 <span class="text-muted">({{ blog.comments.all|length }})</span>
+        </h3>
+
+        <!-- 评论表单 -->
+        {% if user.is_authenticated %}
+            <form action="{% url 'blog:pub_comment' %}" method="POST" class="comment-form">
+                {% csrf_token %}
+                <input type="hidden" name="blog_id" value="{{ blog.id }}">
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">发表你的看法</label>
+                    <textarea name="content" rows="3" class="form-control comment-input"
+                              placeholder="分享你的想法..." required></textarea>
+                </div>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-modern-primary">
+                        📨 发表评论
+                    </button>
+                </div>
+            </form>
+        {% else %}
+            <div class="comment-form text-center">
+                <p class="text-muted mb-3">登录后即可发表评论</p>
+                <a href="{% url 'zlauth:login' %}?next={{ request.path }}" class="btn btn-modern-primary">
+                    🔐 登录
+                </a>
             </div>
-        </form>
-    </div>
-    <div class="mt-2">
-        <ul class="list-group list-group-flush">
-            {% for comment in blog.comments.all %}
-                <li class="list-group-item">
-                  <div class="d-flex justify-content-between text-body-secondary">
-                      <div class="user-info">
-                          <img src="{% static 'image/avatar.webp' %}" class="rounded-circle" width="40" height="40" alt="">
-                          <span class="ms-2">{{ comment.author.username }}</span>
-                      </div>
-                      <div class="create-time" style="line-height: 40px;">{{ comment.pub_time|date:"Y年m月d日 h时i分" }}</div>
-                  </div>
-                  <div class="mt-2">{{ comment.content }}</div>
-              </li>
-            {% endfor %}
-        </ul>
-    </div>
+        {% endif %}
+
+        <!-- 评论列表 -->
+        <div class="mt-4">
+            {% if blog.comments.all %}
+                {% for comment in blog.comments.all %}
+                    <div class="comment-item animate-slide-in" style="animation-delay: {{ forloop.counter0|add:1|floatformat:1|mul:0.1 }}s">
+                        <div class="comment-author">
+                            <img src="{% static 'image/avatar.webp' %}"
+                                 alt="{{ comment.author.username }}"
+                                 class="comment-avatar">
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-semibold text-dark">{{ comment.author.username }}</span>
+                                    <span class="small text-muted">{{ comment.pub_time|date:"Y年m月d日 H:i" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="comment-content">
+                            {{ comment.content }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="empty-state-icon" style="font-size: 3rem;">💭</div>
+                    <p class="text-muted">暂无评论，来发表第一条评论吧！</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}
+
+{% block scripts %}
     <script>
-    hljs.highlightAll();
+        // 代码高亮
+        hljs.highlightAll();
+
+        // 平滑滚动到评论区
+        document.addEventListener('DOMContentLoaded', function() {
+            const hash = window.location.hash;
+            if (hash === '#comments') {
+                document.querySelector('.comments-section').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
     </script>
 {% endblock %}

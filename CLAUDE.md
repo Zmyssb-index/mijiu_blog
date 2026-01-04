@@ -1,64 +1,152 @@
-# CLAUDE.md - 项目指导文档
+# CLAUDE.md
 
-## 项目概述
-- **项目名称**：mijiu博客
-- **主要功能**：博客
-- **技术栈**：django+pymysql
-- **项目状态**：已完成
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 项目结构
+## Project Overview
+- **Name**: mijiu博客 (MiJiu Blog)
+- **Framework**: Django 5.0.3
+- **Database**: MySQL (via PyMySQL)
+- **Language**: Chinese (zh-hans)
+- **Timezone**: Asia/Shanghai
 
-项目根目录/
-├── .idea/              # PyCharm IDE 配置目录（开发工具相关）
-├── blog/              # 博客应用（Django app）
-├── mijiublog/         # 主应用（Django app）
-├── static/            # 静态文件目录
-├── templates/         # 模板文件目录
-├── zlauth/            # 用户认证应用（Django app）
-├── CLAUDE.md          # Claude 指导文档
-├── manage.py          # Django 管理脚本
-└── my.cnf            # MySQL 配置文件（可能为备份或备用配置）
+## Critical Configuration Issues
 
-## 开发环境
-### IDE 配置
-- 项目使用 **PyCharm** 开发
-- `.idea/` 目录包含 IDE 特定配置
-- 建议：将 `.idea/` 添加到 `.gitignore`（如果使用 Git）
+**IMPORTANT**: The project has naming inconsistencies that must be understood before making changes:
 
-### 依赖管理
-检查是否存在以下文件：
-- `requirements.txt` - Python 依赖包列表
-- `Pipfile` - 如果使用 pipenv
-- `pyproject.toml` - 如果使用现代 Python 工具链
+1. **Settings Module Mismatch**:
+   - `manage.py` references `zhiliaoblog.settings` (line 9)
+   - But the actual directory is named `mijiublog/`
+   - URL configs also reference `zhiliaoblog.urls` and `zhiliaoblog.wsgi`
+   - **Action**: When modifying settings imports, use `zhiliaoblog` (not `mijiublog`)
 
-## Django 应用架构
-### 应用职责划分
-| 应用名称      | 功能描述                       | 最后更新时间 |
-| ------------- | ------------------------------ | ------------ |
-| **zlauth**    | 用户认证、登录、注册、权限管理 | 2024-04-04   |
-| **blog**      | 主要博客内容管理系统           | 2024-04-05   |
-| **mijiublog** | 主系统                         | 2026-01-03   |
-| **static**    | 静态资源文件（CSS, JS, 图片）  | 2024-04-05   |
-| **templates** | Django HTML 模板               | 2026-01-03   |
+2. **Database Configuration**:
+   - Database credentials are stored in `my.cnf` (NOT in version control safe location)
+   - Database name: `mijiublog`
+   - User: `root`
+   - Contains plain-text password - should be moved to environment variables
 
-## 运行与开发指令
+## Project Structure
+
+```
+mijiublog/                    # Project root
+├── mijiublog/               # Main Django project package (referenced as 'zhiliaoblog')
+│   ├── settings.py          # Settings module: 'zhiliaoblog.settings'
+│   ├── urls.py              # Root URL config
+│   └── wsgi.py
+├── blog/                    # Blog functionality app
+├── zlauth/                  # Authentication app
+├── static/                  # Static files (CSS, JS, images)
+├── templates/               # Global templates
+├── my.cnf                   # MySQL credentials file
+└── manage.py
+```
+
+## Django Apps Architecture
+
+### blog (Blog Content Management)
+- **URL Namespace**: `blog:`
+- **URL Prefix**: `/` (root)
+- **Models**:
+  - `BlogCategory`: Blog categories
+  - `Blog`: Blog posts with title, content, pub_time, category (FK), author (FK)
+  - `BlogComment`: Comments with content, pub_time, blog (FK), author (FK)
+- **Key Views**:
+  - `index`: Homepage/blog list
+  - `blog_detail`: Individual blog post (`/blog/detail/<int:blog_id>`)
+  - `pub_blog`: Publish new blog
+  - `pub_comment`: Publish comment
+  - `search`: Search blogs
+- **Ordering**: Both Blog and BlogComment ordered by `-pub_time` (newest first)
+
+### zlauth (User Authentication)
+- **URL Namespace**: `zlauth:`
+- **URL Prefix**: `/auth/`
+- **Models**:
+  - `CaptchaModel`: Email verification codes (unique email, 4-char captcha, create_time)
+- **Key Views**:
+  - `zllogin`: Login (`/auth/login`)
+  - `zllogout`: Logout (`/auth/logout`)
+  - `register`: Registration (`/auth/register`)
+  - `send_email_captcha`: Send email captcha (`/auth/captcha`)
+- **Email Backend**: Configured for QQ SMTP (smtp.qq.com:587 with TLS)
+
+## Development Commands
+
 ```bash
-# 1. 环境准备
-python -m venv venv           # 创建虚拟环境
-source venv/bin/activate     # 激活虚拟环境（Linux/Mac）
-# venv\Scripts\activate      # 激活虚拟环境（Windows）
+# Navigate to project directory
+cd mijiublog
 
-# 2. 安装依赖
-pip install django           # 如果没有 requirements.txt
-# 或
-pip install -r requirements.txt
-
-# 3. 数据库设置
+# Database migrations
 python manage.py makemigrations
 python manage.py migrate
 
-# 4. 启动开发服务器
+# Run development server
 python manage.py runserver
 
-# 5. 创建管理员（首次运行）
+# Run on specific host (for network access)
+python manage.py runserver 0.0.0.0:8000
+
+# Create superuser
 python manage.py createsuperuser
+
+# Access admin panel
+# Navigate to http://localhost:8000/admin/
+
+# Django shell
+python manage.py shell
+
+# Collect static files (production)
+python manage.py collectstatic
+```
+
+## Key Settings
+
+- **Static Files**:
+  - `STATIC_URL = 'static/'`
+  - `STATICFILES_DIRS = [BASE_DIR / "static"]`
+  - Template builtins include `django.templatetags.static` for `{% static %}` tag
+
+- **Templates**:
+  - Located in project-level `templates/` directory
+  - Template context includes standard Django processors
+
+- **Authentication**:
+  - Uses Django's default User model (via `get_user_model()`)
+  - `LOGIN_URL = '/auth/login'`
+  - Standard password validators enabled
+
+- **Admin Interface**:
+  - Available at `/admin/`
+  - Both apps register their models in admin
+
+## Development Notes
+
+1. **Database Access**: MySQL connection configured via `my.cnf` file (not environment variables)
+
+2. **Email Configuration**: Uses QQ SMTP for sending captcha emails - credentials hardcoded in settings.py
+
+3. **Security Concerns** (for production):
+   - `DEBUG = True` is enabled
+   - `SECRET_KEY` is exposed in settings.py
+   - Database credentials in `my.cnf` without encryption
+   - Email password hardcoded
+   - Consider using environment variables or django-environ
+
+4. **Related Names**: BlogComment uses `related_name='comments'` for reverse relation from Blog
+
+5. **Foreign Key Cascades**: All FKs use `on_delete=models.CASCADE`
+
+## URL Structure
+
+```
+/                          → blog.views.index
+/blog/detail/<id>          → blog.views.blog_detail
+/blog/pub                  → blog.views.pub_blog
+/blog/comment/pub          → blog.views.pub_comment
+/search                    → blog.views.search
+/auth/login                → zlauth.views.zllogin
+/auth/logout               → zlauth.views.zllogout
+/auth/register             → zlauth.views.register
+/auth/captcha              → zlauth.views.send_email_captcha
+/admin/                    → Django admin
+```

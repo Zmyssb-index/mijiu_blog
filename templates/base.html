@@ -1,52 +1,90 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}{% endblock %}-mijiu博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - mijiu博客</title>
+
+    <!-- Bootstrap 5 -->
     <link rel="stylesheet" href="{% static 'bootstrap5/bootstrap.min.css' %}">
-    <script src="{% static 'bootstrap5/popper.min.js' %}"></script>
-    <script src="{% static 'bootstrap5/bootstrap.min.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+
+    <!-- 现代化自定义样式 -->
+    <link rel="stylesheet" href="{% static 'css/modern.css' %}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'image/jiu.png' %}">
+
     {% block head %}{% endblock %}
 </head>
 <body>
-<header class="p-3 text-bg-light border-bottom mb-3">
-    <div class="container">
-        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-            <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
-                <img src="{% static 'image/jiu.png' %}" alt="" height="60">
+    <!-- 现代化导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-modern">
+        <div class="container">
+            <!-- Logo -->
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="{% static 'image/jiu.png' %}" alt="mijiu博客" height="50" class="me-2">
+                <span class="gradient-text">mijiu博客</span>
             </a>
 
-            <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                <li><a href="/" class="nav-link px-4 text-secondary-emphasis w-100 p-3 fs-5">Home</a></li>
-                <li><a href="{% url 'blog:pub_blog' %}" class="nav-link px-0 text-secondary-emphasis w-100 p-3 fs-5">Post Blog</a></li>
-            </ul>
+            <!-- 移动端菜单按钮 -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-            <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search" action="{% url 'blog:search' %}" method="GET">
-                <input type="search" name="q" class="form-control" placeholder="Searching..." aria-label="Search">
-            </form>
+            <!-- 导航菜单 -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
+                            <span>🏠</span> 首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'pub_blog' in request.path %}active{% endif %}" href="{% url 'blog:pub_blog' %}">
+                            <span>✍️</span> 发布博客
+                        </a>
+                    </li>
+                </ul>
 
-            {% if user.is_authenticated %}
-                <div class="dropdown text-end">
-                    <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
-                       data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="{% static 'image/avatar.webp' %}" alt="mdo" width="32" height="32" class="rounded-circle">
-                    </a>
-                    <ul class="dropdown-menu text-small" style="">
-                        <li><a class="dropdown-item" href="{% url 'zlauth:logout' %}">退出登录</a></li>
-                    </ul>
-                </div>
-            {% else %}
-                <div class="text-end">
-                    <a href="{% url 'zlauth:login' %}" type="button" class="btn btn-outline-primary me-2">登录</a>
-                    <a href="{% url 'zlauth:register' %}" type="button" class="btn btn-primary">注册</a>
-                </div>
-            {% endif %}
+                <!-- 搜索框 -->
+                <form class="search-modern me-3" role="search" action="{% url 'blog:search' %}" method="GET">
+                    <input type="search" name="q" class="form-control" placeholder="搜索博客..." aria-label="Search">
+                </form>
+
+                <!-- 用户区域 -->
+                {% if user.is_authenticated %}
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle"
+                           id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="{% static 'image/avatar.webp' %}" alt="{{ user.username }}"
+                                 class="user-avatar me-2">
+                            <span class="d-none d-md-inline text-dark fw-semibold">{{ user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{% url 'blog:pub_blog' %}">📝 写文章</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'zlauth:logout' %}">🚪 退出登录</a></li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'zlauth:login' %}" class="btn btn-modern-outline">登录</a>
+                        <a href="{% url 'zlauth:register' %}" class="btn btn-modern-primary">注册</a>
+                    </div>
+                {% endif %}
+            </div>
         </div>
-    </div>
-</header>
-<main class="container bg-white p-3 rounded">
-    {% block main %}{% endblock %}
-</main>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container main-container animate-fade-in-up">
+        {% block main %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="{% static 'bootstrap5/popper.min.js' %}"></script>
+    <script src="{% static 'bootstrap5/bootstrap.min.js' %}"></script>
+
+    {% block scripts %}{% endblock %}
 </body>
 </html>

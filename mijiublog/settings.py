@@ -51,7 +51,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'zhiliaoblog.urls'
+ROOT_URLCONF = 'mijiublog.urls'
 
 TEMPLATES = [
     {
@@ -72,7 +72,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'zhiliaoblog.wsgi.application'
+WSGI_APPLICATION = 'mijiublog.wsgi.application'
 
 
 # Database
